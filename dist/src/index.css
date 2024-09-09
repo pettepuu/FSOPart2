@@ -1,0 +1,18 @@
+.notification {
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+.notification.error {
+  color: red;
+  background: #fdd;
+  border: solid 1px red;
+}
+
+.notification.success {
+  color: green;
+  background: #dfd;
+  border: solid 1px green;
+}
