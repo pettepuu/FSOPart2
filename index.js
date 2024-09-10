@@ -31,17 +31,10 @@ app.get('/info', (req, res) => {
 });
 
 app.get('/api/persons/:id', (request, response) => {
-    const id = Number(request.params.id)
-    const person = Person.find(person => person.id === id)
-
-    console.log(person)
-
-    if (person) {
-        response.json(person)
-      } else {
-        response.status(404).end()
-      }
+  Person.findById(request.params.id).then(person => {
+    response.json(person)
   })
+})
 
   app.delete('/api/persons/:id', async (request, response) => {
     try {
@@ -76,9 +69,11 @@ app.post('/api/persons', async (request, response) => {
       }
      
       console.log(body.name, body.number, body)
-      const savedPerson = await person.save();
-      response.json(savedPerson);
+      person.save().then(newPerson => {
+        response.json(newPerson)
+      })
     }catch (error) {
+      console.error('Error saving person:', error);
       response.status(500).json({ error: 'Internal Server Error' });
     }
     });
