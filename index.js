@@ -21,7 +21,7 @@ const errorHandler = (error, request, response, next) => {
   }
   next(error)
 }
-// tämä tulee kaikkien muiden middlewarejen ja routejen rekisteröinnin jälkeen!
+
 app.use(errorHandler)
 
 app.get('/api/persons', (request, response) => {
@@ -63,10 +63,10 @@ app.delete('/api/persons/:id', async (request, response) => {
 
 app.put('/api/persons/:id', (request, response, next) => {
     const body = request.body
-  
+
     const person = {
-      name: body.content,
-      number: body.important,
+      name: body.name,
+      number: body.number,
     }
     Person.findByIdAndUpdate(request.params.id, person, { new: true } )
       .then(updatePerson => {
