@@ -67,23 +67,22 @@ app.post('/api/persons', async (request, response) => {
         number: body.number,
       }
 
-    const nameExists = await Person.findOne({ name: body.name });
-    if (nameExists) {
-        return response.status(400).json({ 
-          error: 'Name must be unique' 
-        });
+    try{
+      const nameExists = await Person.findOne({ name: body.name });
+      if (nameExists) {
+          return response.status(400).json({ 
+            error: 'Name must be unique' 
+          });
+      }
+     
+      console.log(body.name, body.number, body)
+      const savedPerson = await person.save();
+      response.json(savedPerson);
+    }catch (error) {
+      response.status(500).json({ error: 'Internal Server Error' });
     }
-   
-    console.log(body.name, body.number, body)
-    await person.save().then(result => {
-      console.log(`Added contact to phonebook`);
-      mongoose.connection.close();
-    }).catch(err => {
-      console.error('Error saving person:', err);
-      mongoose.connection.close();
     });
-
-  }) 
+    
 
   const PORT = process.env.PORT || 3001
   app.listen(PORT, () => {
