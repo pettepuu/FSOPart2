@@ -4,7 +4,6 @@ const morgan = require('morgan');
 const cors = require('cors');
 const Person = require('./models/person');
 
-
 const app = express();
 
 app.use(express.static('dist'));
@@ -44,13 +43,16 @@ app.get('/api/persons/:id', (request, response) => {
       }
   })
 
-app.delete('/api/persons/:id', (request, response) => {
-    const id = Number(request.params.id)
-    persons = Person.filter(person => person.id !== id)
-    response.status(204).end()
-  })
+  app.delete('/api/persons/:id', async (request, response) => {
+    try {
+      await Person.findByIdAndDelete(request.params.id);
+      response.status(204).end();
+    } catch (error) {
+      response.status(400).json({ error: 'Malformed ID' });
+    }
+  });
 
-app.post('/api/persons', (request, response) => {
+app.post('/api/persons', async (request, response) => {
     const body = request.body
 
     if (!body.name || !body.number) {
@@ -65,7 +67,7 @@ app.post('/api/persons', (request, response) => {
         number: body.number,
       }
 
-    const nameExists = Person.some(person => person.name === body.name);
+    const nameExists = await Person.findOne({ name: body.name });
     if (nameExists) {
         return response.status(400).json({ 
           error: 'Name must be unique' 
@@ -73,7 +75,7 @@ app.post('/api/persons', (request, response) => {
     }
    
     console.log(body.name, body.number, body)
-    person.save().then(result => {
+    await person.save().then(result => {
       console.log(`Added contact to phonebook`);
       mongoose.connection.close();
     }).catch(err => {
