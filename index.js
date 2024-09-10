@@ -13,7 +13,16 @@ morgan.token('body', (req) => JSON.stringify(req.body));
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'));
 app.use(express.json());
 
-const mongoose = require('mongoose');
+const errorHandler = (error, request, response, next) => {
+  console.error(error.message)
+
+  if (error.name === 'CastError') {
+    return response.status(400).send({ error: 'malformatted id' })
+  }
+  next(error)
+}
+// tämä tulee kaikkien muiden middlewarejen ja routejen rekisteröinnin jälkeen!
+app.use(errorHandler)
 
 app.get('/api/persons', (request, response) => {
   Person.find({}).then(persons => {
@@ -30,11 +39,18 @@ app.get('/info', (req, res) => {
     res.send(responseText);
 });
 
-app.get('/api/persons/:id', (request, response) => {
-  Person.findById(request.params.id).then(person => {
-    response.json(person)
+app.get('/api/persons/:id', (request, response, next) => {
+  Person.findById(request.params.id)
+  .then(person => {
+    if (person) {
+      response.json(person)
+    } else {
+      response.status(404).end()
+    }
   })
+  .catch(error => next(error))
 })
+
 
 app.delete('/api/persons/:id', async (request, response) => {
     try {
@@ -44,6 +60,21 @@ app.delete('/api/persons/:id', async (request, response) => {
       response.status(400).json({ error: 'Malformed ID' });
     }
   });
+
+app.put('/api/persons/:id', (request, response, next) => {
+    const body = request.body
+  
+    const person = {
+      name: body.content,
+      number: body.important,
+    }
+    Person.findByIdAndUpdate(request.params.id, person )
+      .then(updatePerson => {
+        response.json(updatePerson)
+      })
+      .catch(error => next(error))
+  })
+
 
 app.post('/api/persons', async (request, response) => {
     const body = request.body
