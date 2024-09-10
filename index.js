@@ -6,7 +6,7 @@ const Person = require('./models/person');
 
 const app = express(); 
 
-app.use(express.static('public')); 
+app.use(express.static('dist')); 
 app.use(cors());
 app.use(express.json());
 
