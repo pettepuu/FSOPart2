@@ -4,14 +4,14 @@ const morgan = require('morgan');
 const cors = require('cors');
 const Person = require('./models/person');
 
-const app = express();
+const app = express(); 
 
-app.use(express.static('dist'));
+app.use(express.static('public')); 
 app.use(cors());
+app.use(express.json());
 
 morgan.token('body', (req) => JSON.stringify(req.body));
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'));
-app.use(express.json());
 
 app.get('/api/persons', (request, response, next) => {
   Person.find({})
@@ -89,14 +89,13 @@ app.post('/api/persons', async (request, response, next) => {
   }
 });
 
-
 const errorHandler = (error, request, response, next) => {
   console.error(error.message);
 
   if (error.name === 'CastError') {
     return response.status(400).send({ error: 'malformatted id' });
   } else if (error.name === 'ValidationError') {
-    return response.status(400).send({ error: 'Validation Error' });
+    return response.status(400).send({ error: error.message }); // Provide the specific validation error message
   } else if (error.name === 'MongoServerError' && error.code === 11000) {
     return response.status(400).send({ error: 'Duplicate key error' });
   }
@@ -104,7 +103,6 @@ const errorHandler = (error, request, response, next) => {
   response.status(500).send({ error: 'Internal Server Error' });
 };
 
-// Apply error handler middleware
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 3001;
