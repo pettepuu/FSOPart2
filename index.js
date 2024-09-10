@@ -36,7 +36,7 @@ app.get('/api/persons/:id', (request, response) => {
   })
 })
 
-  app.delete('/api/persons/:id', async (request, response) => {
+app.delete('/api/persons/:id', async (request, response) => {
     try {
       await Person.findByIdAndDelete(request.params.id);
       response.status(204).end();
@@ -50,34 +50,27 @@ app.post('/api/persons', async (request, response) => {
 
     if (!body.name || !body.number) {
         return response.status(400).json({ 
-          error: 'Name or number is missing. Try again' 
+          error: 'Name or number is missing' 
         });
-      }
+    }
 
-    const person = {
+    const person = new Person({
         id: Math.random()*1500 + 1,
         name: body.name,
         number: body.number,
-      }
-
-    try{
-      const nameExists = await Person.findOne({ name: body.name });
-      if (nameExists) {
-          return response.status(400).json({ 
-            error: 'Name must be unique' 
-          });
-      }
-     
-      console.log(body.name, body.number, body)
-      person.save().then(newPerson => {
-        response.json(newPerson)
-      })
-    }catch (error) {
-      console.error('Error saving person:', error);
-      response.status(500).json({ error: 'Internal Server Error' });
-    }
     });
-    
+
+    try {
+      person.save()
+      .then(savedPerson => {
+        response.json(savedPerson)
+      })
+    } catch (error) {
+        console.error('Error saving person:', error);
+        response.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+  
 
   const PORT = process.env.PORT || 3001
   app.listen(PORT, () => {
